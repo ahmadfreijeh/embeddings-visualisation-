@@ -83,24 +83,73 @@ except Exception as e:
     HUGGING_FACE_MOVIES = []
 
 
-def get_data_by_type(data_type: str, source: str = "dummy") -> Tuple[List[Dict[str, Any]], str, str]:
+def get_data_by_type(data_type: str, source: str = "dummy", text_field: str = None, title_field: str = None) -> Tuple[List[Dict[str, Any]], str, str]:
     """
     Get data by type and source with appropriate text and title fields.
     
     Args:
         data_type: Type of data ("articles" or "movies")
         source: Source of data ("dummy" or "huggingface")
+        text_field: Custom field name for text content (optional)
+        title_field: Custom field name for titles (optional)
     
     Returns:
         Tuple of (data_list, text_field, title_field)
     """
+    # Default field mappings
+    field_mappings = {
+        "articles": {
+            "dummy": {"text": "content", "title": "title"},
+            "static": {"text": "content", "title": "title"}
+        },
+        "movies": {
+            "dummy": {"text": "plot", "title": "title"},
+            "static": {"text": "plot", "title": "title"},
+            "huggingface": {"text": "plot", "title": "title"}
+        }
+    }
+    
+    # Get data based on type and source
     if data_type == "movies":
         if source == "huggingface" and HUGGING_FACE_MOVIES:
-            return HUGGING_FACE_MOVIES, "plot", "title"
+            data = HUGGING_FACE_MOVIES
+            default_text = field_mappings["movies"]["huggingface"]["text"]
+            default_title = field_mappings["movies"]["huggingface"]["title"]
         else:
-            return DUMMY_MOVIES, "plot", "title"
+            data = DUMMY_MOVIES
+            default_text = field_mappings["movies"]["dummy"]["text"]
+            default_title = field_mappings["movies"]["dummy"]["title"]
     else:  # articles
-        return DUMMY_ARTICLES, "content", "title"
+        data = DUMMY_ARTICLES
+        default_text = field_mappings["articles"]["dummy"]["text"]
+        default_title = field_mappings["articles"]["dummy"]["title"]
+    
+    # Use custom fields if provided, otherwise use defaults
+    final_text_field = text_field if text_field else default_text
+    final_title_field = title_field if title_field else default_title
+    
+    # Validate that the fields exist in the data
+    if data and len(data) > 0:
+        first_item = data[0]
+        if final_text_field not in first_item:
+            print(f"⚠️ Warning: Text field '{final_text_field}' not found in data. Available fields: {list(first_item.keys())}")
+            # Try to find a suitable text field
+            for possible_field in ['content', 'plot', 'description', 'text', 'body']:
+                if possible_field in first_item:
+                    final_text_field = possible_field
+                    print(f"✅ Using '{possible_field}' as text field instead")
+                    break
+        
+        if final_title_field not in first_item:
+            print(f"⚠️ Warning: Title field '{final_title_field}' not found in data. Available fields: {list(first_item.keys())}")
+            # Try to find a suitable title field
+            for possible_field in ['title', 'name', 'heading', 'subject']:
+                if possible_field in first_item:
+                    final_title_field = possible_field
+                    print(f"✅ Using '{possible_field}' as title field instead")
+                    break
+    
+    return data, final_text_field, final_title_field
 
 
 def generate_embeddings(texts: List[str]) -> List[List[float]]:
@@ -183,11 +232,19 @@ def process_data(request: Request) -> Dict[str, Any]:
     # Extract parameters from request
     data_type = request.query_params.get("type", "articles")
     source = request.query_params.get("source", "dummy")
+    custom_text_field = request.query_params.get("text_field")
+    custom_title_field = request.query_params.get("title_field")
     
     # Get appropriate data based on type and source
-    data, text_field, title_field = get_data_by_type(data_type, source)
+    data, text_field, title_field = get_data_by_type(
+        data_type, 
+        source, 
+        custom_text_field, 
+        custom_title_field
+    )
     
     print(f"Processing {data_type} ({source} source): {len(data)} items")
+    print(f"Using fields - Text: '{text_field}', Title: '{title_field}'")
     print(f"Sample data: {[item[title_field] for item in data[:3]]}")
     
     # Extract text content for embedding
@@ -222,6 +279,11 @@ def process_data(request: Request) -> Dict[str, Any]:
         "type": data_type,
         "source": source,
         "count": len(data),
+        "fields_used": {
+            "text_field": text_field,
+            "title_field": title_field
+        },
+        "available_fields": list(data[0].keys()) if data else [],
         "texts": texts,
         "chart_url": image_url,
     }
@@ -237,14 +299,32 @@ def read_root():
         "description": "Generate t-SNE visualizations of text embeddings for articles and movies",
         "endpoints": {
             "/process": "Generate embeddings and visualizations",
-            "/process?type=articles": "Process articles (dummy data)",
-            "/process?type=movies": "Process movies (dummy data)",
-            "/process?type=movies&source=huggingface": "Process movies from Hugging Face dataset"
+            "/process?type=articles": "Process articles (static/dummy data)",
+            "/process?type=movies": "Process movies (static/dummy data)",
+            "/process?type=movies&source=huggingface": "Process movies from Hugging Face dataset",
+            "/process?type=movies&text_field=plot&title_field=title": "Custom field mapping"
         },
         "parameters": {
             "type": "Data type: 'articles' or 'movies' (default: 'articles')",
-            "source": "Data source: 'dummy' or 'huggingface' (default: 'dummy', only for movies)"
-        }
+            "source": "Data source: 'dummy'/'static' or 'huggingface' (default: 'dummy')",
+            "text_field": "Custom field name for text content (optional)",
+            "title_field": "Custom field name for titles (optional)"
+        },
+        "data_sources": {
+            "static/dummy": "Local JSON files with sample data for testing",
+            "huggingface": "Real movie dataset from Hugging Face (movies only)"
+        },
+        "field_auto_detection": {
+            "text_fields": "Tries: content, plot, description, text, body",
+            "title_fields": "Tries: title, name, heading, subject"
+        },
+        "examples": [
+            "/process",
+            "/process?type=movies",
+            "/process?type=movies&source=huggingface",
+            "/process?type=articles&text_field=content&title_field=title",
+            "/process?type=movies&source=huggingface&text_field=plot"
+        ]
     }
 
 
@@ -254,11 +334,19 @@ def get_processed_data(request: Request):
     Process data and generate t-SNE visualization.
     
     Query Parameters:
-        type (str): Type of data to process ("articles" or "movies")
-        source (str): Data source ("dummy" or "huggingface" for movies only)
+        type (str): Type of data to process ("articles" or "movies", default: "articles")
+        source (str): Data source ("dummy"/"static" or "huggingface", default: "dummy")
+        text_field (str): Custom field name for text content (optional, auto-detected)
+        title_field (str): Custom field name for titles (optional, auto-detected)
         
     Returns:
         Dictionary containing processing results and visualization URL
+        
+    Examples:
+        /process
+        /process?type=movies
+        /process?type=movies&source=huggingface
+        /process?type=articles&text_field=content&title_field=name
     """
     try:
         processed_data = process_data(request)
@@ -272,3 +360,50 @@ def get_processed_data(request: Request):
             "error": str(e),
             "message": "Failed to process data and generate visualization"
         }
+
+
+@app.get("/data-info")
+def get_data_info():
+    """
+    Get information about available data sources and their field structures.
+    
+    Returns:
+        Dictionary containing data source information and field mappings
+    """
+    info = {
+        "available_data_sources": {
+            "articles": {
+                "source": "static/dummy",
+                "count": len(DUMMY_ARTICLES),
+                "fields": list(DUMMY_ARTICLES[0].keys()) if DUMMY_ARTICLES else [],
+                "sample": DUMMY_ARTICLES[0] if DUMMY_ARTICLES else {}
+            },
+            "movies_static": {
+                "source": "static/dummy", 
+                "count": len(DUMMY_MOVIES),
+                "fields": list(DUMMY_MOVIES[0].keys()) if DUMMY_MOVIES else [],
+                "sample": DUMMY_MOVIES[0] if DUMMY_MOVIES else {}
+            }
+        },
+        "field_auto_detection": {
+            "text_field_priority": ["content", "plot", "description", "text", "body"],
+            "title_field_priority": ["title", "name", "heading", "subject"]
+        },
+        "usage_examples": {
+            "default_articles": "/process?type=articles",
+            "default_movies": "/process?type=movies", 
+            "custom_fields": "/process?type=movies&text_field=plot&title_field=title",
+            "huggingface_movies": "/process?type=movies&source=huggingface"
+        }
+    }
+    
+    # Add Hugging Face data info if available
+    if HUGGING_FACE_MOVIES:
+        info["available_data_sources"]["movies_huggingface"] = {
+            "source": "huggingface",
+            "count": len(HUGGING_FACE_MOVIES),
+            "fields": list(HUGGING_FACE_MOVIES[0].keys()) if HUGGING_FACE_MOVIES else [],
+            "sample": HUGGING_FACE_MOVIES[0] if HUGGING_FACE_MOVIES else {}
+        }
+    
+    return info
