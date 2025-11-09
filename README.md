@@ -265,6 +265,14 @@ curl "http://localhost:8000/process?type=movies&source=huggingface"
 
 ## 🎯 Visual Examples
 
+### Example t-SNE Visualization
+
+Here's what the generated charts look like:
+
+![Articles t-SNE Visualization](static/tsne_articles_dummy.png)
+
+_Example t-SNE visualization showing clustering of articles by topic: ML/AI (blue cluster), Cooking (green cluster), and Science/Astronomy (red cluster)_
+
 ### Articles Processing
 
 #### Basic Articles Request
