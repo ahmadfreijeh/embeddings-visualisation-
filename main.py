@@ -95,6 +95,9 @@ def get_data_by_type(data_type: str, source: str = "dummy", text_field: str = No
     
     Returns:
         Tuple of (data_list, text_field, title_field)
+        
+    Raises:
+        ValueError: If required fields are not found and cannot be auto-detected
     """
     # Default field mappings
     field_mappings = {
@@ -124,30 +127,57 @@ def get_data_by_type(data_type: str, source: str = "dummy", text_field: str = No
         default_text = field_mappings["articles"]["dummy"]["text"]
         default_title = field_mappings["articles"]["dummy"]["title"]
     
+    # Check if data is available
+    if not data or len(data) == 0:
+        raise ValueError(f"No data available for type '{data_type}' with source '{source}'")
+    
     # Use custom fields if provided, otherwise use defaults
     final_text_field = text_field if text_field else default_text
     final_title_field = title_field if title_field else default_title
     
     # Validate that the fields exist in the data
-    if data and len(data) > 0:
-        first_item = data[0]
-        if final_text_field not in first_item:
-            print(f"⚠️ Warning: Text field '{final_text_field}' not found in data. Available fields: {list(first_item.keys())}")
-            # Try to find a suitable text field
-            for possible_field in ['content', 'plot', 'description', 'text', 'body']:
-                if possible_field in first_item:
-                    final_text_field = possible_field
-                    print(f"✅ Using '{possible_field}' as text field instead")
-                    break
+    first_item = data[0]
+    available_fields = list(first_item.keys())
+    
+    # Validate text field
+    if final_text_field not in first_item:
+        print(f"⚠️ Warning: Text field '{final_text_field}' not found in data. Available fields: {available_fields}")
+        # Try to find a suitable text field
+        found_text_field = None
+        for possible_field in ['content', 'plot', 'description', 'text', 'body']:
+            if possible_field in first_item:
+                found_text_field = possible_field
+                print(f"✅ Using '{possible_field}' as text field instead")
+                break
         
-        if final_title_field not in first_item:
-            print(f"⚠️ Warning: Title field '{final_title_field}' not found in data. Available fields: {list(first_item.keys())}")
-            # Try to find a suitable title field
-            for possible_field in ['title', 'name', 'heading', 'subject']:
-                if possible_field in first_item:
-                    final_title_field = possible_field
-                    print(f"✅ Using '{possible_field}' as title field instead")
-                    break
+        if found_text_field:
+            final_text_field = found_text_field
+        else:
+            raise ValueError(
+                f"Text field '{final_text_field}' not found in data and no suitable alternative detected. "
+                f"Available fields: {available_fields}. "
+                f"Please specify a valid text_field parameter from the available fields."
+            )
+    
+    # Validate title field
+    if final_title_field not in first_item:
+        print(f"⚠️ Warning: Title field '{final_title_field}' not found in data. Available fields: {available_fields}")
+        # Try to find a suitable title field
+        found_title_field = None
+        for possible_field in ['title', 'name', 'heading', 'subject']:
+            if possible_field in first_item:
+                found_title_field = possible_field
+                print(f"✅ Using '{possible_field}' as title field instead")
+                break
+        
+        if found_title_field:
+            final_title_field = found_title_field
+        else:
+            raise ValueError(
+                f"Title field '{final_title_field}' not found in data and no suitable alternative detected. "
+                f"Available fields: {available_fields}. "
+                f"Please specify a valid title_field parameter from the available fields."
+            )
     
     return data, final_text_field, final_title_field
 
@@ -307,8 +337,8 @@ def read_root():
         "parameters": {
             "type": "Data type: 'articles' or 'movies' (default: 'articles')",
             "source": "Data source: 'dummy'/'static' or 'huggingface' (default: 'dummy')",
-            "text_field": "Custom field name for text content (optional)",
-            "title_field": "Custom field name for titles (optional)"
+            "text_field": "Custom field name for text content (required if auto-detection fails)",
+            "title_field": "Custom field name for titles (required if auto-detection fails)"
         },
         "data_sources": {
             "static/dummy": "Local JSON files with sample data for testing",
@@ -324,7 +354,12 @@ def read_root():
             "/process?type=movies&source=huggingface",
             "/process?type=articles&text_field=content&title_field=title",
             "/process?type=movies&source=huggingface&text_field=plot"
-        ]
+        ],
+        "error_handling": {
+            "field_validation_error": "Occurs when required fields cannot be found or auto-detected",
+            "solution": "Use /data-info endpoint to see available fields, then specify text_field and/or title_field",
+            "processing_error": "General processing errors (embeddings, visualization, etc.)"
+        }
     }
 
 
@@ -336,8 +371,8 @@ def get_processed_data(request: Request):
     Query Parameters:
         type (str): Type of data to process ("articles" or "movies", default: "articles")
         source (str): Data source ("dummy"/"static" or "huggingface", default: "dummy")
-        text_field (str): Custom field name for text content (optional, auto-detected)
-        title_field (str): Custom field name for titles (optional, auto-detected)
+        text_field (str): Custom field name for text content (required if auto-detection fails)
+        title_field (str): Custom field name for titles (required if auto-detection fails)
         
     Returns:
         Dictionary containing processing results and visualization URL
@@ -346,7 +381,11 @@ def get_processed_data(request: Request):
         /process
         /process?type=movies
         /process?type=movies&source=huggingface
-        /process?type=articles&text_field=content&title_field=name
+        /process?type=articles&text_field=content&title_field=title
+        
+    Error Cases:
+        - Returns 400-level error if required fields cannot be found or auto-detected
+        - Use /data-info endpoint to see available fields for each data source
     """
     try:
         processed_data = process_data(request)
@@ -354,10 +393,19 @@ def get_processed_data(request: Request):
             "success": True,
             "data": processed_data
         }
+    except ValueError as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "error_type": "field_validation_error",
+            "message": "Field validation failed. Please check available fields using /data-info endpoint.",
+            "suggestion": "Use /data-info to see available fields, then specify text_field and/or title_field parameters."
+        }
     except Exception as e:
         return {
             "success": False,
             "error": str(e),
+            "error_type": "processing_error", 
             "message": "Failed to process data and generate visualization"
         }
 
