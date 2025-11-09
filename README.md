@@ -123,6 +123,62 @@ The API will be available at:
 - **Interactive Docs**: http://localhost:8000/docs
 - **Alternative Docs**: http://localhost:8000/redoc
 
+## ⚡ Quick Start Examples
+
+### 1. Test the API Health
+
+```bash
+curl http://localhost:8000/
+```
+
+### 2. Process Sample Articles
+
+```bash
+curl "http://localhost:8000/process?type=articles"
+```
+
+**Expected output:**
+
+- ✅ Generates embeddings for 8 sample articles
+- 🎨 Creates `tsne_articles_dummy.png` visualization
+- 📊 Shows clustering of ML, cooking, and science topics
+
+### 3. Process Sample Movies
+
+```bash
+curl "http://localhost:8000/process?type=movies"
+```
+
+**Expected output:**
+
+- ✅ Processes 6 classic movies (Pulp Fiction, The Matrix, etc.)
+- 🎨 Creates `tsne_movies_dummy.png` visualization
+- 📊 Shows genre-based clustering
+
+### 4. Try Real Movie Dataset
+
+```bash
+curl "http://localhost:8000/process?type=movies&source=huggingface"
+```
+
+**Expected output:**
+
+- ✅ Processes 100+ real movies from Hugging Face
+- 🎨 Creates `tsne_movies_huggingface.png` visualization
+- 📊 Shows professional movie data clustering
+
+### 5. Explore Available Data
+
+```bash
+curl "http://localhost:8000/data-info"
+```
+
+**What you'll get:**
+
+- 📋 Complete list of available fields for each dataset
+- 🔍 Sample data structure for each source
+- 💡 Field auto-detection priorities
+
 ## 📚 API Documentation
 
 ### Base URL
@@ -207,6 +263,195 @@ curl "http://localhost:8000/process?type=movies&source=huggingface"
 }
 ```
 
+## 🎯 Visual Examples
+
+### Articles Processing
+
+#### Basic Articles Request
+
+```bash
+curl "http://localhost:8000/process?type=articles"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "type": "articles",
+    "source": "dummy",
+    "count": 8,
+    "fields_used": {
+      "text_field": "content",
+      "title_field": "title"
+    },
+    "available_fields": ["id", "title", "content"],
+    "texts": [
+      "Machine learning is a subset of artificial intelligence...",
+      "Italian cuisine is known for its regional diversity...",
+      "The universe is estimated to be 13.8 billion years old..."
+    ],
+    "chart_url": "http://localhost:8000/static/tsne_articles_dummy.png"
+  }
+}
+```
+
+#### Custom Field Mapping for Articles
+
+```bash
+curl "http://localhost:8000/process?type=articles&text_field=content&title_field=title"
+```
+
+### Movies Processing
+
+#### Basic Movies Request (Dummy Data)
+
+```bash
+curl "http://localhost:8000/process?type=movies"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "type": "movies",
+    "source": "dummy",
+    "count": 6,
+    "fields_used": {
+      "text_field": "plot",
+      "title_field": "title"
+    },
+    "available_fields": ["id", "title", "plot", "runtime", "genre", "released"],
+    "texts": [
+      "The lives of two mob hitmen, a boxer, a gangster and his wife...",
+      "A computer programmer is rescued from the Matrix...",
+      "A thief who enters people's dreams and steals their secrets..."
+    ],
+    "chart_url": "http://localhost:8000/static/tsne_movies_dummy.png"
+  }
+}
+```
+
+#### Hugging Face Movies Dataset
+
+```bash
+curl "http://localhost:8000/process?type=movies&source=huggingface"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "type": "movies",
+    "source": "huggingface",
+    "count": 100,
+    "fields_used": {
+      "text_field": "plot",
+      "title_field": "title"
+    },
+    "available_fields": ["id", "title", "plot", "genre", "year", "director"],
+    "texts": [
+      "Real movie plot summaries from the Hugging Face dataset...",
+      "Professional movie descriptions with rich metadata...",
+      "Diverse collection spanning multiple decades and genres..."
+    ],
+    "chart_url": "http://localhost:8000/static/tsne_movies_huggingface.png"
+  }
+}
+```
+
+#### Custom Field Mapping for Movies
+
+```bash
+curl "http://localhost:8000/process?type=movies&text_field=plot&title_field=title&source=huggingface"
+```
+
+### Error Handling Examples
+
+#### Invalid Field Names
+
+```bash
+curl "http://localhost:8000/process?type=movies&text_field=invalid_field"
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "error": "Text field 'invalid_field' not found in data and no suitable alternative detected. Available fields: ['id', 'title', 'plot', 'runtime', 'genre', 'released']. Please specify a valid text_field parameter from the available fields.",
+  "error_type": "field_validation_error",
+  "message": "Field validation failed. Please check available fields using /data-info endpoint.",
+  "suggestion": "Use /data-info to see available fields, then specify text_field and/or title_field parameters."
+}
+```
+
+### Data Information Endpoint
+
+```bash
+curl "http://localhost:8000/data-info"
+```
+
+**Response:**
+
+```json
+{
+  "available_data_sources": {
+    "articles": {
+      "source": "static/dummy",
+      "count": 8,
+      "fields": ["id", "title", "content"],
+      "sample": {
+        "id": 1,
+        "title": "Machine Learning Basics",
+        "content": "Machine learning is a subset of artificial intelligence..."
+      }
+    },
+    "movies_static": {
+      "source": "static/dummy",
+      "count": 6,
+      "fields": ["id", "title", "plot", "runtime", "genre", "released"],
+      "sample": {
+        "id": 1,
+        "title": "Pulp Fiction",
+        "plot": "The lives of two mob hitmen, a boxer, a gangster and his wife...",
+        "runtime": 154,
+        "genre": "Crime",
+        "released": 1994
+      }
+    },
+    "movies_huggingface": {
+      "source": "huggingface",
+      "count": 100,
+      "fields": ["id", "title", "plot", "genre", "year", "director"],
+      "sample": {
+        "id": 1,
+        "title": "Sample Movie",
+        "plot": "Professional movie description from dataset...",
+        "genre": "Drama",
+        "year": 2020,
+        "director": "Sample Director"
+      }
+    }
+  },
+  "field_auto_detection": {
+    "text_field_priority": ["content", "plot", "description", "text", "body"],
+    "title_field_priority": ["title", "name", "heading", "subject"]
+  },
+  "usage_examples": {
+    "default_articles": "/process?type=articles",
+    "default_movies": "/process?type=movies",
+    "custom_fields": "/process?type=movies&text_field=plot&title_field=title",
+    "huggingface_movies": "/process?type=movies&source=huggingface"
+  }
+}
+```
+
 ## 📊 Data Sources
 
 ### 1. Local JSON Files
@@ -286,11 +531,134 @@ The API generates high-quality t-SNE visualization plots with:
 - **High Resolution**: 300 DPI output for crisp images
 - **Automatic Layout**: Tight layout with labeled axes
 
-Sample output files:
+### Visualization Examples
 
-- `tsne_articles_dummy.png`
-- `tsne_movies_dummy.png`
-- `tsne_movies_huggingface.png`
+#### Articles t-SNE Chart (`tsne_articles_dummy.png`)
+
+```
+📊 t-SNE Visualization of Articles
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  15 ┤                                                               │
+│     │    ● "Italian Cuisine"                                        │
+│  10 ┤        ● "Perfect Pasta"                                      │
+│     │                                                               │
+│   5 ┤                        ● "The Universe"                      │
+│     │                                                               │
+│   0 ┼─────────────────●──────────────────────────────────────────  │
+│     │              "Cooking"          ● "Space Science"            │
+│  -5 ┤                                                               │
+│     │    ● "Machine Learning"    ● "AI Research"                   │
+│ -10 ┤        ● "Data Science"                                      │
+│     │                                                               │
+│ -15 ┤                                                               │
+│     └─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────   │
+│         -20   -10     0    10    20    30    40    50    60       │
+│                        t-SNE Component 1                          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**PNG Features:**
+
+- 🔵 **Blue scatter points** representing each article
+- 📝 **Text annotations** showing article titles positioned near points
+- 🎯 **Clear clustering**: Tech articles (left), Cooking (top-left), Science (right)
+- 📏 **Grid lines** for easy reading (alpha=0.3)
+- 🏷️ **Professional axes**: "t-SNE Component 1" & "t-SNE Component 2"
+- 📐 **Size**: 10x8 inches at 300 DPI for crisp quality
+
+#### Movies t-SNE Chart (`tsne_movies_dummy.png`)
+
+```
+📊 t-SNE Visualization of Movies
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  20 ┤                                                               │
+│     │                    ● "Inception"                             │
+│  15 ┤         ● "The Matrix"                                       │
+│     │                                                               │
+│  10 ┤                                                               │
+│     │                                                               │
+│   5 ┤                                        ● "Forrest Gump"      │
+│     │                                                               │
+│   0 ┼─────────────────────────────────────────────────────────────  │
+│     │                                                               │
+│  -5 ┤                                                               │
+│     │                                                               │
+│ -10 ┤    ● "Pulp Fiction"                                          │
+│     │        ● "Goodfellas"                                        │
+│ -15 ┤            ● "Casino"                                        │
+│     │                                                               │
+│ -20 ┤                                                               │
+│     └─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────   │
+│         -25   -15    -5     5    15    25    35    45    55       │
+│                        t-SNE Component 1                          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**PNG Features:**
+
+- 🔵 **Blue scatter points** for each movie (alpha=0.7 transparency)
+- 🎬 **Movie titles** positioned near their corresponding points
+- 🎭 **Genre clustering**: Crime movies (bottom-left), Sci-Fi (top-center), Drama (right)
+- 📐 **High resolution**: 10x8 inches at 300 DPI
+- ✨ **Professional styling** with tight layout and proper spacing
+
+#### Hugging Face Movies Chart (`tsne_movies_huggingface.png`)
+
+```
+📊 t-SNE Visualization of Movies (100+ Real Movies)
+┌─────────────────────────────────────────────────────────────────────┐
+│  30 ┤  ● ● ●                           ● ● ●                       │
+│     │     ● ● ● "Sci-Fi Movies"           ● ● "Action Movies"       │
+│  20 ┤       ● ● ●                       ● ● ●                     │
+│     │                                                               │
+│  10 ┤                   ● ● ●                                      │
+│     │              ● ● ● "Comedies" ● ● ●                         │
+│   0 ┼─────────────●─●─●─────────●─●─●─────────────────────────────  │
+│     │           ● ● ● "Dramas" ● ● ●                              │
+│ -10 ┤             ● ● ●           ● ● ●                           │
+│     │                       ● ● ● "Romance" ● ● ●                │
+│ -20 ┤                         ● ● ●                               │
+│     │           ● ● ●                       ● ● ●                 │
+│ -30 ┤     "Horror Movies" ● ● ●       "Thrillers" ● ● ●           │
+│     └─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────   │
+│         -40   -20     0    20    40    60    80   100   120       │
+│                        t-SNE Component 1                          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**PNG Features:**
+
+- 🔵 **100+ data points** from real Hugging Face movie dataset
+- 🎨 **Dense clustering** showing natural genre relationships
+- 📊 **Selective labeling** (subset of titles shown for clarity)
+- 🎯 **Natural groupings** based on plot similarity and thematic content
+- 📈 **Larger scale** visualization showing more complex patterns
+
+### Sample Output Files
+
+Generated files in `/static/` directory:
+
+- `tsne_articles_dummy.png` - Article embeddings visualization
+- `tsne_movies_dummy.png` - Local movie data visualization
+- `tsne_movies_huggingface.png` - Hugging Face dataset visualization
+
+### Accessing Visualizations
+
+After processing, access your visualizations at:
+
+```bash
+# Direct image access
+http://localhost:8000/static/tsne_articles_dummy.png
+http://localhost:8000/static/tsne_movies_dummy.png
+http://localhost:8000/static/tsne_movies_huggingface.png
+
+# Or use the chart_url from API response
+{
+  "chart_url": "http://localhost:8000/static/tsne_movies_dummy.png"
+}
+```
 
 ## 🧪 Testing
 
