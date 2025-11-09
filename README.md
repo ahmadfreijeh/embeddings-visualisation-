@@ -2,9 +2,11 @@
 
 A FastAPI application that generates beautiful t-SNE visualizations of text embeddings for articles and movies using OpenAI's embedding model.
 
-![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub repo](https://img.shields.io/badge/GitHub-embeddings--visualisation-black.svg)](https://github.com/ahmadfreijeh/embeddings-visualisation-)
+[![OpenAI](https://img.shields.io/badge/OpenAI-text--embedding--3--small-orange.svg)](https://openai.com)
 
 ## 🚀 Features
 
@@ -48,8 +50,8 @@ embeddings/
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd embeddings
+git clone https://github.com/ahmadfreijeh/embeddings-visualisation-.git
+cd embeddings-visualisation-
 ```
 
 ### 2. Create Virtual Environment
@@ -476,10 +478,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, issues, or contributions, please:
 
-1. Check the [Issues](../../issues) page
-2. Create a new issue with detailed description
-3. Include error logs and system information
-4. Tag appropriately (bug, enhancement, question)
+1. **Issues**: [GitHub Issues](https://github.com/ahmadfreijeh/embeddings-visualisation-/issues)
+2. **Discussions**: [GitHub Discussions](https://github.com/ahmadfreijeh/embeddings-visualisation-/discussions)
+3. **Pull Requests**: [GitHub PRs](https://github.com/ahmadfreijeh/embeddings-visualisation-/pulls)
+
+When reporting issues, please include:
+- Error logs and stack traces
+- System information (OS, Python version)
+- Steps to reproduce the problem
+- Expected vs actual behavior
 
 ---
 
