@@ -474,21 +474,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Hugging Face** for dataset integration
 - **Matplotlib** for visualization capabilities
 
-## 📞 Support
-
-For questions, issues, or contributions, please:
-
-1. **Issues**: [GitHub Issues](https://github.com/ahmadfreijeh/embeddings-visualisation-/issues)
-2. **Discussions**: [GitHub Discussions](https://github.com/ahmadfreijeh/embeddings-visualisation-/discussions)
-3. **Pull Requests**: [GitHub PRs](https://github.com/ahmadfreijeh/embeddings-visualisation-/pulls)
-
-When reporting issues, please include:
-
-- Error logs and stack traces
-- System information (OS, Python version)
-- Steps to reproduce the problem
-- Expected vs actual behavior
-
 ---
 
 **Happy coding! 🚀✨**
