@@ -67,6 +67,33 @@ The API now returns additional information:
 }
 ```
 
+### Enhanced Error Handling
+
+The API now provides detailed error messages when field validation fails:
+
+```json
+{
+  "success": false,
+  "error": "Text field 'invalid_field' not found in data and no suitable alternative detected. Available fields: ['id', 'title', 'plot']. Please specify a valid text_field parameter from the available fields.",
+  "error_type": "field_validation_error",
+  "message": "Field validation failed. Please check available fields using /data-info endpoint.",
+  "suggestion": "Use /data-info to see available fields, then specify text_field and/or title_field parameters."
+}
+```
+
+#### Error Types
+
+- **`field_validation_error`**: Field validation failed (invalid or missing fields)
+- **`processing_error`**: General processing errors (embeddings, visualization, etc.)
+
+#### Field Requirements
+
+Fields are **required** when:
+
+- Custom field names are specified but don't exist in the data
+- Auto-detection fails to find suitable alternatives
+- Data structure doesn't match expected field names
+
 ### Backward Compatibility
 
 All existing API calls continue to work exactly as before. The new features are additive and optional.
