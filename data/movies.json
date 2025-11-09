@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Pulp Fiction",
+    "runtime": 154,
+    "plot": "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
+    "keyScene": "John Travolta is forced to inject adrenaline directly into Uma Thurman's heart after she overdoses on heroin.",
+    "genre": "Crime, Drama",
+    "released": 1994
+  },
+  {
+    "id": 2,
+    "title": "The Dark Knight",
+    "runtime": 152,
+    "plot": "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+    "keyScene": "Batman angrily responds 'I'm Batman' when asked who he is by Falcone.",
+    "genre": "Action, Crime, Drama, Thriller",
+    "released": 2008
+  },
+  {
+    "id": 3,
+    "title": "Fight Club",
+    "runtime": 139,
+    "plot": "An insomniac office worker and a devil-may-care soapmaker form an underground fight club that evolves into something much, much more.",
+    "keyScene": "Brad Pitt explains the rules of Fight Club to Edward Norton. The first rule of Fight Club is: You do not talk about Fight Club. The second rule of Fight Club is: You do not talk about Fight Club.",
+    "genre": "Drama",
+    "released": 1999
+  },
+  {
+    "id": 4,
+    "title": "Inception",
+    "runtime": 148,
+    "plot": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+    "keyScene": "Leonardo DiCaprio explains the concept of inception to Ellen Page by using a child's spinning top.",
+    "genre": "Action, Adventure, Sci-Fi, Thriller",
+    "released": 2010
+  },
+  {
+    "id": 5,
+    "title": "The Matrix",
+    "runtime": 136,
+    "plot": "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
+    "keyScene": "Red pill or blue pill? Morpheus offers Neo a choice between the red pill, which will allow him to learn the truth about the Matrix, or the blue pill, which will return him to his former life.",
+    "genre": "Action, Sci-Fi",
+    "released": 1999
+  },
+  {
+    "id": 6,
+    "title": "The Shawshank Redemption",
+    "runtime": 142,
+    "plot": "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+    "keyScene": "Andy Dufresne escapes from Shawshank prison by crawling through a sewer pipe.",
+    "genre": "Drama",
+    "released": 1994
+  }
+]
