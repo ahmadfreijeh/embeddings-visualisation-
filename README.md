@@ -483,6 +483,7 @@ For questions, issues, or contributions, please:
 3. **Pull Requests**: [GitHub PRs](https://github.com/ahmadfreijeh/embeddings-visualisation-/pulls)
 
 When reporting issues, please include:
+
 - Error logs and stack traces
 - System information (OS, Python version)
 - Steps to reproduce the problem
